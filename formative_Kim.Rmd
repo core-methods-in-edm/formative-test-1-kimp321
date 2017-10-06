@@ -1,0 +1,118 @@
+---
+title: "formative.rmd"
+author: "kimp"
+date: "10/5/2017"
+output: html_document
+---
+
+# Load Dyplyr and Tidyr
+
+```{r}
+library(dplyr)
+library(tidyr)
+```
+
+
+# Upload the MITx/Harvardx dataset to R as a dataframe named D1.
+
+```{r}
+D1 <- read.csv("HMXPC13_DI_v2_5-14-14.csv")
+head(D1)
+```
+
+# What does the DI suffix that is appeneded to two of the variable names mean?
+
+There is a note that details the csv file: 
+"MITx and HarvardX, 2014, "HarvardX-MITx Person-Course Academic Year 2013 De-Identified dataset, version 2.0", doi:10.7910/DVN/26147, Harvard Dataverse, V10; HMXPC13_DI_v2_5-14-14.csv [fileName]"
+(https://dataverse.harvard.edu/file.xhtml?fileId=2468954&version=RELEASED&version=.0)
+
+The DI suffix appends 4 varaible names (userid, final_cc_cname, start_time, and last_event). The DI should stand for de-identified data.
+
+# How many people enrolled in HarvardX/CS50x recieved certification in 2012? (Please inlcude your code in your markdown document)
+
+```{r}
+x <- filter(D1, course_id == 'HarvardX/CS50x/2012')
+head(x)
+count(x, certified)
+```
+
+x <- filter(D1, course_id == 'HarvardX/CS50x/2012')
+head(x)
+count(x, certified)
+
+1287 people enrolled in HarvardxCS50x and received certification in 2012.
+
+# How many people registered for HarvardX/CS50x from Columbia on October 15, 2012? (Please inlcude your code in your markdown document)
+
+```{r}
+y <- filter(D1, final_cc_cname_DI == 'Colombia', last_event_DI == '2012-10-15')
+print(y)
+count(y, certified)
+```
+
+y <- filter(D1, final_cc_cname_DI == 'Colombia', last_event_DI == '2012-10-15')
+print(y)
+count(y, certified)
+
+In the printed data frame, there are 0 students who were registered for HarvardX/CS50x from Colombia on October 15, 2012.
+
+# Create a new data frame (D2) that includes student ID and registration date for all students from a country of your choice (Please inlcude your code in your markdown document)
+
+```{r}
+z <- filter(D1, final_cc_cname_DI == 'United States')
+head(z)
+D2 <- select(z, userid_DI, start_time_DI)
+head(D2)
+```
+
+z <- filter(D1, final_cc_cname_DI == 'United States')
+head(z)
+D2 <- select(z, userid_DI, start_time_DI)
+head(D2)
+
+# Create a new data frame (D3) in which the column names are the registration dates, with one column containing the student ids and all other cells indicating a 1 if the student registered on that date or an NA if they did not (hint: you will need to create a new variable before you change the structure of your data frame)
+
+
+```{r}
+dup <- select(D1, userid_DI, start_time_DI, registered)
+dup <- mutate(dup, row = row_number())
+D3 <- spread(dup, start_time_DI, registered)
+head(D3)
+```
+
+# Now make the row names of D3 the student ids on your new data frame and remove the user id column from your data frame
+
+```{r}
+names(D3)[2]<-"studentid"
+D3 <- select(D3, -userid_DI)
+head(D3)
+```
+
+# Convert your data frame to a matrix (M1)
+
+```{r}
+M1 <- data.matrix(D3)
+type(M1)
+M1
+```
+
+# Create a new matrix which is the transposed version of your matrix (M2)
+
+```{r}
+M2 <- t(M1)
+M2
+```
+
+# Create a third matrix (M3) that is a student by student matrix where the cells in the matrix represent if two studentes registered on the same day (This will take a lot of processing power, you may not be able to complete it if you have a large number of students)
+
+```{r}
+M3 <- intersect(M1[1,], M1[2,])
+
+```
+
+# Convert the diagonal of your matrix into NAs
+
+```{r}
+diag(M3) <- NA
+```
+
